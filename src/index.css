@@ -1003,6 +1003,13 @@ html:not([data-theme="light"]):not([data-theme="dark"]) .topbar {
   html:not([data-theme="light"]) .attachment .icon-btn {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
   }
+  html:not([data-theme="light"]) .card-title {
+    color: #fff;
+  }
+  html:not([data-theme="light"]) .progress-label,
+  html:not([data-theme="light"]) .progress-pill {
+    color: #c9d1d9;
+  }
 }
 
 html[data-theme="dark"] .brand-dot {
@@ -1040,6 +1047,13 @@ html[data-theme="dark"] .project-card:hover {
 }
 html[data-theme="dark"] .attachment .icon-btn {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+html[data-theme="dark"] .card-title {
+  color: #fff;
+}
+html[data-theme="dark"] .progress-label,
+html[data-theme="dark"] .progress-pill {
+  color: #c9d1d9;
 }
 
 /* ─── Theme toggle button ─── */
