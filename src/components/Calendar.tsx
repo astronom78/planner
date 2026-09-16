@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { collection } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useCollection } from '../hooks'
@@ -10,6 +10,104 @@ import MeetingDetail from './MeetingDetail'
 import QuickAdd from './QuickAdd'
 
 const dayFmt = (d: Date) => format(d, 'yyyy-MM-dd')
+
+function DayCell({
+  items,
+  dateKey,
+  inMonth,
+  today,
+  onOpenTask,
+  onOpenMeeting,
+  onQuickAdd,
+}: {
+  items: CalendarItem[]
+  dateKey: string
+  inMonth: boolean
+  today: boolean
+  onOpenTask: (id: string) => void
+  onOpenMeeting: (id: string) => void
+  onQuickAdd: (key: string) => void
+}) {
+  const dayRef = useRef<HTMLDivElement>(null)
+  const [visibleCount, setVisibleCount] = useState(items.length)
+
+  useEffect(() => {
+    const dayEl = dayRef.current
+    if (!dayEl || items.length === 0) return
+
+    const measure = () => {
+      const isMobile = window.innerWidth <= 760
+      const dayNum = dayEl.querySelector<HTMLElement>('.cal-day-num')
+      const dayNumH = dayNum ? dayNum.offsetHeight + 4 : 0
+      const maxH = (isMobile ? 88 : 126) - 12
+      const availH = maxH - dayNumH
+
+      const hidden = document.createElement('div')
+      hidden.style.cssText = 'position:absolute;visibility:hidden;height:auto;display:flex;flex-direction:column;gap:3px;align-items:stretch;width:' + dayEl.clientWidth + 'px'
+      const chipClass = 'cal-chip'
+      for (const it of items) {
+        const btn = document.createElement('button')
+        btn.className = chipClass + (it.isDone ? ' done' : '')
+        btn.innerHTML = '<span class="chip-dot"></span><span class="chip-text">' + it.title + '</span>'
+        hidden.appendChild(btn)
+      }
+      dayEl.appendChild(hidden)
+
+      let count = 0
+      let used = 0
+      const children = hidden.children
+      for (let i = 0; i < children.length; i++) {
+        const h = (children[i] as HTMLElement).getBoundingClientRect().height
+        if (used + h > availH) break
+        used += h + 3
+        count++
+      }
+      dayEl.removeChild(hidden)
+
+      if (count < 1 && items.length > 0) count = 1
+      if (count >= items.length) count = items.length
+      setVisibleCount(count)
+    }
+
+    measure()
+
+    const ro = new ResizeObserver(measure)
+    ro.observe(dayEl)
+    return () => ro.disconnect()
+  }, [items])
+
+  const hidden = items.length - visibleCount
+  const cls =
+    'cal-day' + (inMonth ? '' : ' muted') + (today ? ' today' : '')
+
+  return (
+    <div ref={dayRef} className={cls} onDoubleClick={() => onQuickAdd(dateKey)}>
+      <div className="cal-day-num">{format(new Date(dateKey + 'T00:00:00'), 'd')}</div>
+      <div className="cal-items">
+        {items.slice(0, visibleCount).map((it) => (
+          <button
+            key={it.kind + '-' + it.id}
+            className={'cal-chip ' + (it.isDone ? 'done' : '')}
+            style={{ '--chip': it.color } as React.CSSProperties}
+            onClick={() => (it.kind === 'task' ? onOpenTask(it.id) : onOpenMeeting(it.id))}
+            title={it.title}
+          >
+            <span className="chip-dot" />
+            <span className="chip-text">{it.title}</span>
+          </button>
+        ))}
+        {hidden > 0 && (
+          <button className="cal-overflow" onClick={() => onQuickAdd(dateKey)}>
+            +{hidden} ещё
+          </button>
+        )}
+        <button className="cal-add" title="Добавить на этот день" onClick={() => onQuickAdd(dateKey)}>
+          +
+        </button>
+      </div>
+    </div>
+  )
+}
 
 export default function Calendar() {
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
@@ -116,32 +214,18 @@ export default function Calendar() {
           const key = dayFmt(d)
           const dayItems = byDay.get(key) ?? []
           const inMonth = isSameMonth(d, month)
-          const today = isToday(d)
+          const todayCheck = isToday(d)
           return (
-            <div
+            <DayCell
               key={key}
-              className={'cal-day' + (inMonth ? '' : ' muted') + (today ? ' today' : '')}
-              onDoubleClick={() => setQuickDay(key)}
-            >
-              <div className="cal-day-num">{format(d, 'd')}</div>
-              <div className="cal-items">
-                {dayItems.map((it) => (
-                  <button
-                    key={it.kind + '-' + it.id}
-                    className={'cal-chip ' + (it.isDone ? 'done' : '')}
-                    style={{ '--chip': it.color } as React.CSSProperties}
-                    onClick={() => (it.kind === 'task' ? openTask(it.id) : openMeeting(it.id))}
-                    title={it.title}
-                  >
-                    <span className="chip-dot" />
-                    <span className="chip-text">{it.title}</span>
-                  </button>
-                ))}
-                <button className="cal-add" title="Добавить на этот день" onClick={() => setQuickDay(key)}>
-                  +
-                </button>
-              </div>
-            </div>
+              items={dayItems}
+              dateKey={key}
+              inMonth={inMonth}
+              today={todayCheck}
+              onOpenTask={openTask}
+              onOpenMeeting={openMeeting}
+              onQuickAdd={setQuickDay}
+            />
           )
         })}
       </div>

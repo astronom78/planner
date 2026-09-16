@@ -1,9 +1,22 @@
 import { useState } from 'react'
 import Calendar from './components/Calendar'
 import Projects from './components/Projects'
+import { useTheme } from './hooks'
+
+const themeIcon = (resolved: 'light' | 'dark', choice: string) => {
+  if (choice === 'system') return '🖥'
+  return resolved === 'dark' ? '🌙' : '☀️'
+}
+
+const nextTheme = (current: 'light' | 'dark' | 'system'): 'light' | 'dark' | 'system' => {
+  if (current === 'light') return 'dark'
+  if (current === 'dark') return 'system'
+  return 'light'
+}
 
 export default function App() {
   const [tab, setTab] = useState<'calendar' | 'projects'>('calendar')
+  const { theme, setTheme, resolved } = useTheme()
 
   return (
     <div className="app">
@@ -20,7 +33,13 @@ export default function App() {
             Проекты
           </button>
         </div>
-        <div className="brand-spacer" />
+        <button
+          className="theme-btn"
+          onClick={() => setTheme(nextTheme(theme))}
+          title={theme === 'system' ? 'Системная тема' : theme === 'dark' ? 'Тёмная тема' : 'Светлая тема'}
+        >
+          {themeIcon(resolved, theme)}
+        </button>
       </header>
       <main className="content">{tab === 'calendar' ? <Calendar /> : <Projects />}</main>
     </div>
