@@ -3,18 +3,14 @@ import { collection, query, orderBy } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useCollection } from '../hooks'
 import type { Project, Task } from '../types'
-import { addProject, unarchiveProject, PROJECT_COLORS } from '../actions'
+import { addProject, PROJECT_COLORS } from '../actions'
 import ProjectEditor from './ProjectEditor'
-
-const archivedDate = (ts?: number | null) =>
-  ts ? new Date(ts).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }) : ''
 
 export default function Projects() {
   const [openId, setOpenId] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [newColor, setNewColor] = useState(PROJECT_COLORS[0])
-  const [showArchive, setShowArchive] = useState(false)
 
   const projects = useCollection<Project>(query(collection(db, 'projects'), orderBy('createdAt'))) ?? []
   const tasks = useCollection<Task>(collection(db, 'tasks')) ?? []
@@ -55,20 +51,9 @@ export default function Projects() {
     <div className="page">
       <div className="cal-head">
         <h1 className="page-title">Проекты</h1>
-        <div className="head-actions">
-          {archived.length > 0 && (
-            <button
-              className={'btn' + (showArchive ? ' active' : '')}
-              onClick={() => setShowArchive((v) => !v)}
-              title={showArchive ? 'Скрыть архив' : 'Показать архив'}
-            >
-              🗄 Архив · {archived.length}
-            </button>
-          )}
-          <button className="btn primary" onClick={() => setCreating(true)}>
-            + Новый проект
-          </button>
-        </div>
+        <button className="btn primary" onClick={() => setCreating(true)}>
+          + Новый проект
+        </button>
       </div>
 
       {creating && (
@@ -131,34 +116,10 @@ export default function Projects() {
         {active.length === 0 && archived.length > 0 && (
           <div className="empty">
             <p>Активных проектов нет</p>
-            <p className="hint">Все проекты перенесены в архив</p>
+            <p className="hint">Все проекты перенесены в архив — вкладка «🗄 Архив» в шапке</p>
           </div>
         )}
       </div>
-
-      {showArchive && archived.length > 0 && (
-        <section className="archive-section">
-          <div className="section-label">Архив · {archived.length}</div>
-          <div className="archive-list">
-            {archived.map((p) => (
-              <div key={p.id} className="archive-row">
-                <span className="archive-dot" style={{ background: p.color }} />
-                <button className="archive-title" onClick={() => setOpenId(p.id)} title="Открыть проект">
-                  {p.title}
-                </button>
-                <span className="archive-date">{archivedDate(p.archivedAt)}</span>
-                <button
-                  className="btn"
-                  onClick={() => unarchiveProject(p.id)}
-                  title="Вернуть проект в список"
-                >
-                  Вернуть
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   )
 }

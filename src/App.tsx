@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Calendar from './components/Calendar'
 import Projects from './components/Projects'
+import Archive from './components/Archive'
 import { useTheme } from './hooks'
 
 const themeIcon = (resolved: 'light' | 'dark', choice: string) => {
@@ -15,7 +16,7 @@ const nextTheme = (current: 'light' | 'dark' | 'system'): 'light' | 'dark' | 'sy
 }
 
 export default function App() {
-  const [tab, setTab] = useState<'calendar' | 'projects'>('calendar')
+  const [tab, setTab] = useState<'calendar' | 'projects' | 'archive'>('calendar')
   const { theme, setTheme, resolved } = useTheme()
 
   return (
@@ -32,6 +33,9 @@ export default function App() {
           <button className={'seg' + (tab === 'projects' ? ' active' : '')} onClick={() => setTab('projects')}>
             Проекты
           </button>
+          <button className={'seg' + (tab === 'archive' ? ' active' : '')} onClick={() => setTab('archive')}>
+            🗄 Архив
+          </button>
         </div>
         <button
           className="theme-btn"
@@ -41,7 +45,9 @@ export default function App() {
           {themeIcon(resolved, theme)}
         </button>
       </header>
-      <main className="content">{tab === 'calendar' ? <Calendar /> : <Projects />}</main>
+      <main className="content">
+        {tab === 'calendar' ? <Calendar /> : tab === 'projects' ? <Projects /> : <Archive />}
+      </main>
     </div>
   )
 }
