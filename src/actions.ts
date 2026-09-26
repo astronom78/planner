@@ -57,6 +57,14 @@ export function updateProject(id: string, patch: Partial<Project>): Promise<void
   return updateDoc(doc(db, 'projects', id), patch)
 }
 
+export function archiveProject(id: string): Promise<void> {
+  return updateDoc(doc(db, 'projects', id), { archived: true, archivedAt: Date.now() })
+}
+
+export function unarchiveProject(id: string): Promise<void> {
+  return updateDoc(doc(db, 'projects', id), { archived: false, archivedAt: null })
+}
+
 export async function deleteProject(id: string): Promise<void> {
   const taskSnap = await getDocs(query(collection(db, 'tasks'), where('projectId', '==', id)))
   const taskIds = taskSnap.docs.map((d) => d.id)

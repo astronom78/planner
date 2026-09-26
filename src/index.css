@@ -841,6 +841,97 @@ body {
   color: var(--tertiary);
 }
 
+/* ─── Archive ─── */
+.head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.head-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn.active {
+  background: var(--fill);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pill-archived {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--secondary);
+  background: var(--fill);
+  border: 1px dashed var(--hairline);
+  border-radius: 999px;
+  padding: 4px 12px;
+  white-space: nowrap;
+}
+
+.sheet-footer.split {
+  justify-content: space-between;
+}
+
+.archive-section {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--hairline);
+}
+
+.archive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.archive-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px dashed var(--hairline);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+}
+
+.archive-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.archive-title {
+  appearance: none;
+  border: none;
+  background: none;
+  padding: 0;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  font: 600 14px/1.3 var(--font);
+  color: var(--label);
+  cursor: pointer;
+}
+
+.archive-title:hover {
+  color: var(--accent);
+}
+
+.archive-date {
+  font-size: 12px;
+  color: var(--tertiary);
+  white-space: nowrap;
+}
+
 .color-row {
   display: flex;
   gap: 10px;

@@ -7,6 +7,8 @@ import {
   addStage,
   addTask,
   updateProject,
+  archiveProject,
+  unarchiveProject,
   deleteProject,
   deleteStage,
   updateStage,
@@ -99,8 +101,11 @@ export default function ProjectEditor({ project, onBack }: Props) {
             onChange={(e) => updateProject(project.id, { title: e.target.value })}
           />
         </h1>
-        <div className="progress-pill">
-          {doneTasks}/{tasks.length} · {progress}%
+        <div className="head-right">
+          {project.archived && <span className="pill-archived">В архиве</span>}
+          <div className="progress-pill">
+            {doneTasks}/{tasks.length} · {progress}%
+          </div>
         </div>
       </div>
 
@@ -280,7 +285,18 @@ export default function ProjectEditor({ project, onBack }: Props) {
         </button>
       </section>
 
-      <div className="sheet-footer">
+      <div className="sheet-footer split">
+        <button
+          className="btn"
+          onClick={() => (project.archived ? unarchiveProject(project.id) : archiveProject(project.id))}
+          title={
+            project.archived
+              ? 'Вернуть проект в основной список'
+              : 'Перенести проект в архив — он скроется из списка'
+          }
+        >
+          {project.archived ? '← Вернуть из архива' : '🗄 В архив'}
+        </button>
         <button
           className="btn danger"
           onClick={() => {

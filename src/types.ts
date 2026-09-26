@@ -6,6 +6,8 @@ export interface Project {
   color: string
   notes: string
   createdAt: number
+  archived?: boolean
+  archivedAt?: number | null
 }
 
 export interface Stage {

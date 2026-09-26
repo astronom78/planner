@@ -21,7 +21,7 @@ export default function QuickAdd({ date, onClose, onTaskCreated, onMeetingCreate
   const [stageId, setStageId] = useState<string | null>(null)
   const [time, setTime] = useState('')
 
-  const projects = useCollection<Project>(collection(db, 'projects')) ?? []
+  const projects = (useCollection<Project>(collection(db, 'projects')) ?? []).filter((p) => !p.archived)
   const stages = useCollection<Stage>(
     projectId ? query(collection(db, 'stages'), where('projectId', '==', projectId), orderBy('order')) : null,
     [projectId],
@@ -30,7 +30,7 @@ export default function QuickAdd({ date, onClose, onTaskCreated, onMeetingCreate
   const submit = () => {
     if (!title.trim()) return
     if (mode === 'task') {
-      const pid = projectId ?? projects[0]?.id ?? null
+      const pid = projects.some((p) => p.id === projectId) ? projectId : projects[0]?.id ?? null
       if (pid == null) {
         alert('Сначала создайте проект на вкладке «Проекты»')
         return
