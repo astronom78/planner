@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { collection, query, where, orderBy } from 'firebase/firestore'
+import { collection, query, where } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useCollection } from '../hooks'
 import type { Project, Task, Stage, Attachment } from '../types'
@@ -35,7 +35,9 @@ export default function ProjectEditor({ project, onBack }: Props) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const stages = useCollection<Stage>(query(collection(db, 'stages'), where('projectId', '==', project.id), orderBy('order'))) ?? []
+  const stages = [...(useCollection<Stage>(query(collection(db, 'stages'), where('projectId', '==', project.id))) ?? [])].sort(
+    (a, b) => a.order - b.order,
+  )
   const tasks = useCollection<Task>(query(collection(db, 'tasks'), where('projectId', '==', project.id))) ?? []
   const attachments = useCollection<Attachment>(query(collection(db, 'attachments'), where('projectId', '==', project.id))) ?? []
 

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { collection, query, where, orderBy } from 'firebase/firestore'
+import { collection, query, where } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useCollection } from '../hooks'
 import type { Project, Stage } from '../types'
@@ -22,10 +22,12 @@ export default function QuickAdd({ date, onClose, onTaskCreated, onMeetingCreate
   const [time, setTime] = useState('')
 
   const projects = (useCollection<Project>(collection(db, 'projects')) ?? []).filter((p) => !p.archived)
-  const stages = useCollection<Stage>(
-    projectId ? query(collection(db, 'stages'), where('projectId', '==', projectId), orderBy('order')) : null,
-    [projectId],
-  ) ?? []
+  const stages = [
+    ...(useCollection<Stage>(
+      projectId ? query(collection(db, 'stages'), where('projectId', '==', projectId)) : null,
+      [projectId],
+    ) ?? []),
+  ].sort((a, b) => a.order - b.order)
 
   const submit = () => {
     if (!title.trim()) return
