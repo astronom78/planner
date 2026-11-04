@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth } from 'firebase/auth'
+import { initializeAuth, browserLocalPersistence, browserPopupRedirectResolver } from 'firebase/auth'
 import { getFirestore, collection, doc } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
@@ -13,7 +13,11 @@ const firebaseConfig = {
 }
 
 export const app = initializeApp(firebaseConfig)
-export const auth = getAuth(app)
+// Вход хранится в localStorage: с IndexedDB (по умолчанию) Firebase зависает там, где база не открывается, и экран остаётся пустым
+export const auth = initializeAuth(app, {
+  persistence: browserLocalPersistence,
+  popupRedirectResolver: browserPopupRedirectResolver,
+})
 export const db = getFirestore(app)
 export const storage = getStorage(app)
 
