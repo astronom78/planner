@@ -1,5 +1,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { onSnapshot, type Query, type QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore'
+import { onAuthStateChanged, type User } from 'firebase/auth'
+import { auth } from './firebase'
+import { migrateLegacyData } from './migrate'
 
 export function docsTo<T>(snap: QueryDocumentSnapshot<DocumentData>[]): T[] {
   return snap.map((d) => ({ id: d.id, ...d.data() }) as T)
@@ -18,6 +21,22 @@ export function useCollection<T>(q: Query<DocumentData> | null, deps: unknown[] 
   }, deps)
 
   return data
+}
+
+// undefined — Firebase ещё проверяет сохранённый вход, null — не вошли
+export function useUser(): User | null | undefined {
+  const [user, setUser] = useState<User | null | undefined>(undefined)
+
+  useEffect(
+    () =>
+      onAuthStateChanged(auth, async (u) => {
+        if (u) await migrateLegacyData(u).catch((err) => console.error('Legacy data migration failed', err))
+        setUser(u)
+      }),
+    [],
+  )
+
+  return user
 }
 
 type ThemeChoice = 'light' | 'dark' | 'system'

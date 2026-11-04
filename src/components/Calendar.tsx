@@ -1,6 +1,5 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
-import { collection } from 'firebase/firestore'
-import { db } from '../firebase'
+import { userCol } from '../firebase'
 import { useCollection } from '../hooks'
 import type { CalendarItem, Task, Stage, Project, Meeting } from '../types'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday } from 'date-fns'
@@ -149,10 +148,10 @@ export default function Calendar() {
   const suppressClickRef = useRef(false)
   const endDragRef = useRef<() => void>(() => {})
 
-  const tasks = useCollection<Task>(collection(db, 'tasks')) ?? []
-  const meetings = useCollection<Meeting>(collection(db, 'meetings')) ?? []
-  const stages = useCollection<Stage>(collection(db, 'stages')) ?? []
-  const projects = useCollection<Project>(collection(db, 'projects')) ?? []
+  const tasks = useCollection<Task>(userCol('tasks')) ?? []
+  const meetings = useCollection<Meeting>(userCol('meetings')) ?? []
+  const stages = useCollection<Stage>(userCol('stages')) ?? []
+  const projects = useCollection<Project>(userCol('projects')) ?? []
 
   const projectById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects])
   const stageById = useMemo(() => new Map(stages.map((s) => [s.id, s])), [stages])

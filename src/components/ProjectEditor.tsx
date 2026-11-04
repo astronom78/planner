@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
-import { collection, query, where } from 'firebase/firestore'
-import { db } from '../firebase'
+import { query, where } from 'firebase/firestore'
+import { userCol } from '../firebase'
 import { useCollection } from '../hooks'
 import type { Project, Task, Stage, Attachment } from '../types'
 import {
@@ -35,11 +35,11 @@ export default function ProjectEditor({ project, onBack }: Props) {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const stages = [...(useCollection<Stage>(query(collection(db, 'stages'), where('projectId', '==', project.id))) ?? [])].sort(
+  const stages = [...(useCollection<Stage>(query(userCol('stages'), where('projectId', '==', project.id))) ?? [])].sort(
     (a, b) => a.order - b.order,
   )
-  const tasks = useCollection<Task>(query(collection(db, 'tasks'), where('projectId', '==', project.id))) ?? []
-  const attachments = useCollection<Attachment>(query(collection(db, 'attachments'), where('projectId', '==', project.id))) ?? []
+  const tasks = useCollection<Task>(query(userCol('tasks'), where('projectId', '==', project.id))) ?? []
+  const attachments = useCollection<Attachment>(query(userCol('attachments'), where('projectId', '==', project.id))) ?? []
 
   const tasksByStage = useMemo(() => {
     const map = new Map<string | 'none', Task[]>()

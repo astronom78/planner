@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { collection, query, orderBy } from 'firebase/firestore'
-import { db } from '../firebase'
+import { query, orderBy } from 'firebase/firestore'
+import { userCol } from '../firebase'
 import { useCollection } from '../hooks'
 import type { Project, Task } from '../types'
 import { addProject, PROJECT_COLORS } from '../actions'
@@ -12,8 +12,8 @@ export default function Projects() {
   const [newTitle, setNewTitle] = useState('')
   const [newColor, setNewColor] = useState(PROJECT_COLORS[0])
 
-  const projects = useCollection<Project>(query(collection(db, 'projects'), orderBy('createdAt'))) ?? []
-  const tasks = useCollection<Task>(collection(db, 'tasks')) ?? []
+  const projects = useCollection<Project>(query(userCol('projects'), orderBy('createdAt'))) ?? []
+  const tasks = useCollection<Task>(userCol('tasks')) ?? []
 
   useEffect(() => {
     const listener = (e: Event) => {

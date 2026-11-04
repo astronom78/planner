@@ -1126,6 +1126,47 @@ html[data-theme="dark"] .progress-pill {
   color: #c9d1d9;
 }
 
+/* ─── Sign in ─── */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.signin {
+  display: grid;
+  place-items: center;
+  min-height: 70%;
+}
+
+.signin-card {
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+}
+
+.signin-text {
+  color: var(--secondary);
+  font-size: 15px;
+  line-height: 1.45;
+  margin: 10px 0 22px;
+}
+
+.signin-btn {
+  padding: 9px 18px;
+  font-size: 14px;
+}
+
+.signin-error {
+  color: var(--danger);
+  font-size: 13px;
+  margin: 14px 0 0;
+}
+
 /* ─── Theme toggle button ─── */
 .theme-btn {
   appearance: none;

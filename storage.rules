@@ -1,0 +1,14 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Вложения пользователя
+    match /users/{uid}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Старые вложения (до входа через Google): только владельцу планнера
+    match /attachments/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.token.email == 'lizok3546@gmail.com';
+    }
+  }
+}

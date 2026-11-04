@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
-import { collection, query, where } from 'firebase/firestore'
-import { db } from '../firebase'
+import { query, where } from 'firebase/firestore'
+import { userCol } from '../firebase'
 import { useCollection } from '../hooks'
 import type { Task, Stage, Project, Attachment } from '../types'
 import { updateTask, deleteTask, addAttachment, deleteAttachment } from '../actions'
@@ -20,7 +20,7 @@ export default function TaskDetail({ task, stage, project, onClose, onOpenProjec
   const fileRef = useRef<HTMLInputElement>(null)
 
   const attachments =
-    useCollection<Attachment>(query(collection(db, 'attachments'), where('taskId', '==', task.id)), [task.id]) ?? []
+    useCollection<Attachment>(query(userCol('attachments'), where('taskId', '==', task.id)), [task.id]) ?? []
 
   const setDone = (v: boolean) => updateTask(task.id, { isDone: v })
   const rename = (title: string) => updateTask(task.id, { title })

@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { collection, query, orderBy } from 'firebase/firestore'
-import { db } from '../firebase'
+import { query, orderBy } from 'firebase/firestore'
+import { userCol } from '../firebase'
 import { useCollection } from '../hooks'
 import type { Project, Task } from '../types'
 import { unarchiveProject } from '../actions'
@@ -12,8 +12,8 @@ const archivedDate = (ts?: number | null) =>
 export default function Archive() {
   const [openId, setOpenId] = useState<string | null>(null)
 
-  const projects = useCollection<Project>(query(collection(db, 'projects'), orderBy('createdAt'))) ?? []
-  const tasks = useCollection<Task>(collection(db, 'tasks')) ?? []
+  const projects = useCollection<Project>(query(userCol('projects'), orderBy('createdAt'))) ?? []
+  const tasks = useCollection<Task>(userCol('tasks')) ?? []
 
   const open = openId != null ? projects.find((p) => p.id === openId) : null
   if (open) return <ProjectEditor project={open} onBack={() => setOpenId(null)} />
