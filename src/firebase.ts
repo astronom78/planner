@@ -50,6 +50,10 @@ export function userDoc(name: string, id: string) {
   return doc(db, first, ...rest, name, id)
 }
 
+export function userRootDoc() {
+  return doc(db, 'users', uid())
+}
+
 export function spacesCol() {
   return collection(db, 'users', uid(), 'spaces')
 }

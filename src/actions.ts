@@ -7,10 +7,11 @@ import {
   query,
   where,
   doc,
+  setDoc,
   type WhereFilterOp,
 } from 'firebase/firestore'
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
-import { storage, userCol, userDoc, userStoragePath, spacesCol } from './firebase'
+import { storage, userCol, userDoc, userStoragePath, spacesCol, userRootDoc } from './firebase'
 import type { Project, Task, Attachment, Stage, Meeting } from './types'
 
 export const PROJECT_COLORS = [
@@ -184,6 +185,15 @@ export async function addSpace(title: string, color: string): Promise<string> {
 
 export function renameSpace(id: string, title: string): Promise<void> {
   return updateDoc(doc(spacesCol(), id), { title })
+}
+
+export function setSpaceColor(id: string, color: string): Promise<void> {
+  return updateDoc(doc(spacesCol(), id), { color })
+}
+
+// Цвет личного планера хранится в самом документе пользователя
+export function setMainSpaceColor(color: string): Promise<void> {
+  return setDoc(userRootDoc(), { mainColor: color }, { merge: true })
 }
 
 export async function deleteSpace(id: string): Promise<void> {

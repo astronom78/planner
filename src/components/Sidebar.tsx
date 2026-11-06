@@ -1,19 +1,37 @@
-import { useEffect } from 'react'
-import { query, orderBy } from 'firebase/firestore'
-import { spacesCol, MAIN_SPACE } from '../firebase'
+import { useEffect, useState } from 'react'
+import { query, orderBy, onSnapshot } from 'firebase/firestore'
+import { spacesCol, userRootDoc, MAIN_SPACE } from '../firebase'
 import { useCollection } from '../hooks'
 import type { Space } from '../types'
-import { addSpace, renameSpace, deleteSpace, PROJECT_COLORS } from '../actions'
+import {
+  addSpace,
+  renameSpace,
+  deleteSpace,
+  setSpaceColor,
+  setMainSpaceColor,
+  PROJECT_COLORS,
+} from '../actions'
 
 interface Props {
   space: string
   onSelect: (id: string) => void
 }
 
-const MAIN_COLOR = '#FF6B3D'
+const DEFAULT_MAIN_COLOR = '#FF6B3D'
 
 export default function Sidebar({ space, onSelect }: Props) {
   const spaces = useCollection<Space>(query(spacesCol(), orderBy('createdAt')))
+  const [mainColor, setMainColor] = useState(DEFAULT_MAIN_COLOR)
+  const [coloring, setColoring] = useState<{ id: string; title: string; color: string } | null>(null)
+
+  useEffect(
+    () =>
+      onSnapshot(userRootDoc(), (snap) => {
+        const c = snap.get('mainColor')
+        setMainColor(typeof c === 'string' ? c : DEFAULT_MAIN_COLOR)
+      }),
+    [],
+  )
 
   // Сохранённый планер могли удалить (в том числе на другом устройстве) — возвращаемся в личный
   useEffect(() => {
@@ -38,22 +56,41 @@ export default function Sidebar({ space, onSelect }: Props) {
     deleteSpace(s.id)
   }
 
+  const pickColor = (color: string) => {
+    if (!coloring) return
+    if (coloring.id === MAIN_SPACE) setMainSpaceColor(color)
+    else setSpaceColor(coloring.id, color)
+    setColoring(null)
+  }
+
+  const colorButton = (id: string, title: string, color: string) => (
+    <button
+      className="icon-btn small"
+      title="Цвет планера"
+      onClick={(e) => {
+        e.stopPropagation()
+        setColoring({ id, title, color })
+      }}
+    >
+      🎨
+    </button>
+  )
+
   return (
     <nav className="sidebar">
       <div className="side-label">Планеры</div>
-      <button
-        className={'side-item' + (space === MAIN_SPACE ? ' active' : '')}
-        onClick={() => onSelect(MAIN_SPACE)}
-      >
-        <span className="side-dot" style={{ background: MAIN_COLOR }} />
+      <div className={'side-item' + (space === MAIN_SPACE ? ' active' : '')} onClick={() => onSelect(MAIN_SPACE)}>
+        <span className="side-dot" style={{ background: mainColor }} />
         <span className="side-title">Личный</span>
-      </button>
+        {space === MAIN_SPACE && <span className="side-actions">{colorButton(MAIN_SPACE, 'Личный', mainColor)}</span>}
+      </div>
       {(spaces ?? []).map((s) => (
         <div key={s.id} className={'side-item' + (space === s.id ? ' active' : '')} onClick={() => onSelect(s.id)}>
           <span className="side-dot" style={{ background: s.color }} />
           <span className="side-title">{s.title}</span>
           {space === s.id && (
             <span className="side-actions">
+              {colorButton(s.id, s.title, s.color)}
               <button
                 className="icon-btn small"
                 title="Переименовать"
@@ -81,6 +118,29 @@ export default function Sidebar({ space, onSelect }: Props) {
       <button className="side-add" onClick={create}>
         + Новый планер
       </button>
+
+      {coloring && (
+        <div className="overlay" onClick={() => setColoring(null)}>
+          <div className="sheet small" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-head">
+              <span className="sheet-title">Цвет планера «{coloring.title}»</span>
+              <button className="icon-btn" onClick={() => setColoring(null)}>
+                ✕
+              </button>
+            </div>
+            <div className="color-row">
+              {PROJECT_COLORS.map((c) => (
+                <button
+                  key={c}
+                  className={'color-dot' + (coloring.color === c ? ' selected' : '')}
+                  style={{ background: c }}
+                  onClick={() => pickColor(c)}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   )
 }
