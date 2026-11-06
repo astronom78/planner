@@ -63,6 +63,19 @@ export default function Sidebar({ space, onSelect }: Props) {
     setColoring(null)
   }
 
+  // Нажатие на цветную точку тоже открывает выбор цвета
+  const colorDot = (id: string, title: string, color: string) => (
+    <button
+      className="side-dot"
+      style={{ background: color }}
+      title="Изменить цвет"
+      onClick={(e) => {
+        e.stopPropagation()
+        setColoring({ id, title, color })
+      }}
+    />
+  )
+
   const colorButton = (id: string, title: string, color: string) => (
     <button
       className="icon-btn small"
@@ -80,13 +93,13 @@ export default function Sidebar({ space, onSelect }: Props) {
     <nav className="sidebar">
       <div className="side-label">Планеры</div>
       <div className={'side-item' + (space === MAIN_SPACE ? ' active' : '')} onClick={() => onSelect(MAIN_SPACE)}>
-        <span className="side-dot" style={{ background: mainColor }} />
+        {colorDot(MAIN_SPACE, 'Личный', mainColor)}
         <span className="side-title">Личный</span>
         {space === MAIN_SPACE && <span className="side-actions">{colorButton(MAIN_SPACE, 'Личный', mainColor)}</span>}
       </div>
       {(spaces ?? []).map((s) => (
         <div key={s.id} className={'side-item' + (space === s.id ? ' active' : '')} onClick={() => onSelect(s.id)}>
-          <span className="side-dot" style={{ background: s.color }} />
+          {colorDot(s.id, s.title, s.color)}
           <span className="side-title">{s.title}</span>
           {space === s.id && (
             <span className="side-actions">
