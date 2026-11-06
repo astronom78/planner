@@ -8,6 +8,15 @@ export interface Project {
   createdAt: number
   archived?: boolean
   archivedAt?: number | null
+  pinned?: boolean
+  order?: number
+}
+
+export interface Space {
+  id: ID
+  title: string
+  color: string
+  createdAt: number
 }
 
 export interface Stage {

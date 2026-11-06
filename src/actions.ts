@@ -6,10 +6,11 @@ import {
   getDoc,
   query,
   where,
+  doc,
   type WhereFilterOp,
 } from 'firebase/firestore'
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage'
-import { storage, userCol, userDoc, userStoragePath } from './firebase'
+import { storage, userCol, userDoc, userStoragePath, spacesCol } from './firebase'
 import type { Project, Task, Attachment, Stage, Meeting } from './types'
 
 export const PROJECT_COLORS = [
@@ -53,6 +54,22 @@ export async function addProject(title: string, color: string): Promise<Project>
 
 export function updateProject(id: string, patch: Partial<Project>): Promise<void> {
   return updateDoc(userDoc('projects', id), patch)
+}
+
+// Закреплённые проекты идут первыми, внутри групп — по order; у старых проектов order нет, их место — по дате создания
+export function sortProjects(list: Project[]): Project[] {
+  return [...list].sort(
+    (a, b) => Number(!!b.pinned) - Number(!!a.pinned) || (a.order ?? a.createdAt) - (b.order ?? b.createdAt),
+  )
+}
+
+export function setProjectPinned(p: Project, pinned: boolean): Promise<void> {
+  // Новый закреплённый — внизу закреплённых, откреплённый — наверху остальных
+  return updateDoc(userDoc('projects', p.id), { pinned, order: pinned ? Date.now() : -Date.now() })
+}
+
+export async function saveProjectOrder(list: Project[]): Promise<void> {
+  await Promise.all(list.map((p, i) => (p.order === i ? null : updateDoc(userDoc('projects', p.id), { order: i }))))
 }
 
 export function archiveProject(id: string): Promise<void> {
@@ -156,4 +173,23 @@ export async function deleteAttachment(id: string): Promise<void> {
 
 export function downloadAttachmentUrl(a: Attachment): void {
   window.open(a.url, '_blank')
+}
+
+const SPACE_COLLECTIONS = ['projects', 'stages', 'tasks', 'meetings', 'attachments']
+
+export async function addSpace(title: string, color: string): Promise<string> {
+  const ref = await addDoc(spacesCol(), { title, color, createdAt: Date.now() })
+  return ref.id
+}
+
+export function renameSpace(id: string, title: string): Promise<void> {
+  return updateDoc(doc(spacesCol(), id), { title })
+}
+
+export async function deleteSpace(id: string): Promise<void> {
+  for (const name of SPACE_COLLECTIONS) {
+    const snap = await getDocs(userCol(name, id))
+    await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)))
+  }
+  await deleteDoc(doc(spacesCol(), id))
 }

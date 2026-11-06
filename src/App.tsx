@@ -1,14 +1,25 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'
 import Calendar from './components/Calendar'
 import Projects from './components/Projects'
 import Archive from './components/Archive'
-import { auth } from './firebase'
+import Sidebar from './components/Sidebar'
+import { auth, setCurrentSpace, MAIN_SPACE } from './firebase'
 import { useTheme, useUser } from './hooks'
 
 const themeIcon = (resolved: 'light' | 'dark', choice: string) => {
   if (choice === 'system') return '🖥'
   return resolved === 'dark' ? '🌙' : '☀️'
+}
+
+const SPACE_KEY = 'planner-space'
+
+function storedSpace(): string {
+  try {
+    return localStorage.getItem(SPACE_KEY) || MAIN_SPACE
+  } catch {
+    return MAIN_SPACE
+  }
 }
 
 const nextTheme = (current: 'light' | 'dark' | 'system'): 'light' | 'dark' | 'system' => {
@@ -46,6 +57,18 @@ export default function App() {
   const [tab, setTab] = useState<'calendar' | 'projects' | 'archive'>('calendar')
   const { theme, setTheme, resolved } = useTheme()
   const user = useUser()
+  const [space, setSpace] = useState(storedSpace)
+  // Коллекции читаются через userCol, который берёт текущий планер отсюда
+  setCurrentSpace(space)
+
+  const selectSpace = useCallback((id: string) => {
+    setSpace(id)
+    try {
+      localStorage.setItem(SPACE_KEY, id)
+    } catch {
+      /* без запоминания планера тоже работает */
+    }
+  }, [])
 
   return (
     <div className="app">
@@ -82,17 +105,18 @@ export default function App() {
           </button>
         </div>
       </header>
-      <main className="content" key={user?.uid}>
-        {user === undefined ? null : user === null ? (
+      {user === undefined ? null : user === null ? (
+        <main className="content">
           <SignIn />
-        ) : tab === 'calendar' ? (
-          <Calendar />
-        ) : tab === 'projects' ? (
-          <Projects />
-        ) : (
-          <Archive />
-        )}
-      </main>
+        </main>
+      ) : (
+        <div className="workspace" key={user.uid}>
+          <Sidebar space={space} onSelect={selectSpace} />
+          <main className="content" key={space}>
+            {tab === 'calendar' ? <Calendar /> : tab === 'projects' ? <Projects /> : <Archive />}
+          </main>
+        </div>
+      )}
     </div>
   )
 }

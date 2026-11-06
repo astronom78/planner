@@ -33,6 +33,7 @@ export default function ProjectEditor({ project, onBack }: Props) {
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [newTaskDeadline, setNewTaskDeadline] = useState('')
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [showDoneStages, setShowDoneStages] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const stages = [...(useCollection<Stage>(query(userCol('stages'), where('projectId', '==', project.id))) ?? [])].sort(
@@ -47,6 +48,8 @@ export default function ProjectEditor({ project, onBack }: Props) {
     for (const list of map.values()) list.sort(sortTasks)
     return map
   }, [tasks])
+
+  const doneStageCount = stages.filter((s) => s.isDone).length
 
   const progress = tasks.length ? Math.round((tasks.filter((t) => t.isDone).length / tasks.length) * 100) : 0
   const doneTasks = tasks.filter((t) => t.isDone).length
@@ -150,6 +153,8 @@ export default function ProjectEditor({ project, onBack }: Props) {
         <div className="section-label">Этапы</div>
         <div className="stages">
           {stages.map((s, i) => {
+            // Завершённые этапы скрыты, пока их не раскроют; номер этапа остаётся сквозным
+            if (s.isDone && !showDoneStages) return null
             const stageTasks = tasksByStage.get(s.id) ?? []
             return (
               <div key={s.id} className={'stage' + (s.isDone ? ' done' : '')}>
@@ -207,6 +212,12 @@ export default function ProjectEditor({ project, onBack }: Props) {
               </div>
             )
           })}
+
+          {doneStageCount > 0 && (
+            <button className="add-mini done-toggle" onClick={() => setShowDoneStages((v) => !v)}>
+              {showDoneStages ? 'Скрыть завершённые этапы' : `Показать завершённые этапы (${doneStageCount})`}
+            </button>
+          )}
 
           <div className="stage-plain">
             <div className="stage-tasks">
